@@ -45,19 +45,87 @@ function initMap() {
 
     //マーカーにイベントリスナを設定
     marker.addListener('click', function() {
-      // infowindow.setContent(place.name);  //results[i].name
+
+
+      var contentString = place.name +
+          '<div id="bodyContent">'+
+          '<div id="start">出発地に設定</div>'+
+          '<div id=end><button>目的地に設定</button></div>'+
+          '</div>';
+
+
       var infowindow = new google.maps.InfoWindow({
-        content: place.name
+        content: contentString
       });
+
+      var startBtn = document.getElementById("start")
+      startBtn.innerText = "出発地に設定する";
+      // google.maps.event.addDomListener(startBtn,"click", function(){
+      //   infowindow.setContent("出発地に設定しました");
+      //   //ここでstartを設定
+      //   //マーカーのボタンをすり替える
+      // });
+
+      var endBtn = document.createElement("button");
+      endBtn.innerText = "目的地に設定する";
+
+      infowindow.setContent(startBtn + endBtn);
       infowindow.open(map, this);
     });
 
     MarkerArray.push(marker);
   }
 
+  // function setEndBtn(){
+  //
+  //   var endBtn = document.createElement("button");
+  //   endBtn.innerText = "目的地に設定する";
+  //   google.maps.event.addDomListener(endBtn,"click", function(){
+  //     infowindow.setContent("目的地に設定しました");
+  //     //ここでendを設定しルートを表示
+  //
+  //   });
+  //   infowindow.setContent(endBtn);
+  //
+  // }
 
   function ClearAllIcon() {
     MarkerArray.forEach(function (marker, idx) { marker.setMap(null); });
   }
+
+
+  //DirectionsService のオブジェクトを生成
+  var directionsService = new google.maps.DirectionsService();
+  //DirectionsRenderer のオブジェクトを生成
+  var directionsRenderer = new google.maps.DirectionsRenderer();
+
+  //directionsRenderer と地図を紐付け
+  directionsRenderer.setMap(map);
+
+  //リクエストの出発点の位置（Empire State Building 出発地点の緯度経度）
+  var start = new google.maps.LatLng(35.658034, 139.701636);
+  //リクエストの終着点の位置（Grand Central Station 到着地点の緯度経度）
+  var end = new google.maps.LatLng( 35.658034,139.709);
+
+  // ルートを取得するリクエスト
+  var request = {
+    origin: start,      // 出発地点の緯度経度
+    destination: end,   // 到着地点の緯度経度
+    travelMode: 'TRANSIT' //トラベルモード（歩き）
+  };
+
+  //DirectionsService のオブジェクトのメソッド route() にリクエストを渡し、
+  //コールバック関数で結果を setDirections(result) で directionsRenderer にセットして表示
+  directionsService.route(request, function(result, status) {
+    //ステータスがOKの場合、
+    if (status === 'OK') {
+      directionsRenderer.setDirections(result); //取得したルート（結果：result）をセット
+    }else{
+      alert("取得できませんでした：" + status);
+    }
+  });
+
+
+
 
 }
